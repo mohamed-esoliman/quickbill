@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 
 
@@ -10,7 +12,7 @@ const Form = () => {
     defaultDueDate = defaultDueDate.toLocaleDateString();
 
     const [invoiceData, setInvoiceData] = useState({
-            currentDate: new Date().toISOString(),
+            currentDate: new Date().toLocaleDateString(),
             dueDate: defaultDueDate,
             invoiceNumber: '1',
             billToPerson: {
@@ -34,8 +36,6 @@ const Form = () => {
             totalTax: 0,
             grandTotal: 0
         });
-
-        console.log(invoiceData);
 
     const handleChange = (propPath, value, invoiceData) => {
         if (!propPath) return;
@@ -94,91 +94,78 @@ const Form = () => {
             invoiceData.items[i].total = invoiceData.items[i].quantity * invoiceData.items[i].price;
         }
 
-        let subtotal = invoiceData.items.reduce((acc, item) => acc + item.total, 0);
-        let totalDiscount = subtotal * (invoiceData.discount / 100);
-        let totalTax = subtotal * (invoiceData.tax / 100);
-        let grandTotal = subtotal - totalDiscount + totalTax;
+        invoiceData.subtotal = invoiceData.items.reduce((acc, item) => acc + item.total, 0);
+        invoiceData.totalDiscount = invoiceData.subtotal * (invoiceData.discount / 100);
+        invoiceData.totalTax = invoiceData.subtotal * (invoiceData.tax / 100);
+        invoiceData.grandTotal = invoiceData.subtotal - invoiceData.totalDiscount + invoiceData.totalTax;
 
 
-        
-
-
-        // const generatePDF = (invoiceData) => {
-        //     const doc = new jsPDF();
-
-        //     // Document styles
-        //     const headersColor = 230; // Light gray for table headers
-        //     const lineColor = 200; // Slightly darker line color
-
-        //     // Add a blue rectangle as header background
-        //     doc.setFillColor(63, 81, 181); // Set fill color to a nice blue
-        //     doc.rect(0, 0, 210, 30, 'F'); // Draw the rectangle
-
-        //     // Invoice title
-        //     doc.setFontSize(18);
-        //     doc.setTextColor(255, 255, 255); // White color
-        //     doc.text('INVOICE', 105, 20, { align: "center" });
-
-        //     // Reset text color for body
-        //     doc.setTextColor(0);
-
-        //     // Basic Invoice Info
-        //     doc.setFontSize(11);
-        //     doc.text(`Date: ${new Date(invoiceData.currentDate).toLocaleDateString()}`, 20, 40);
-        //     doc.text(`Due Date: ${new Date(invoiceData.dueDate).toLocaleDateString()}`, 20, 46);
-        //     doc.text(`Invoice No.: ${invoiceData.invoiceNo}`, 20, 52);
-
-        //     // Bill To
-        //     doc.setFontSize(10);
-        //     doc.text('Bill To:', 20, 60);
-        //     doc.setFontSize(10);
-        //     doc.text(invoiceData.billTo.name, 20, 66);
-        //     doc.text(invoiceData.billTo.email, 20, 72);
-        //     doc.text(invoiceData.billTo.address, 20, 78);
-
-        //     // Bill From
-        //     doc.text('Bill From:', 110, 60);
-        //     doc.text(invoiceData.billFrom.name, 110, 66);
-        //     doc.text(invoiceData.billFrom.email, 110, 72);
-        //     doc.text(invoiceData.billFrom.address, 110, 78);
-
-        //     // Line below headers
-        //     doc.setDrawColor(lineColor); // Gray line
-        //     doc.line(20, 85, 190, 85);
-
-        //     // Invoice Table
-        //     autoTable(doc, {
-        //         startY: 90,
-        //         theme: 'grid',
-        //         head: [['Description', 'Quantity', 'Price', 'Total']],
-        //         body: invoiceData.items.map(item => [item.description, item.quantity, item.price.toFixed(2), (item.quantity * item.price).toFixed(2)]),
-        //         styles: {
-        //         fillColor: [255, 255, 255],
-        //         },
-        //         headStyles: {
-        //         fillColor: [headersColor],
-        //         },
-        //         columnStyles: {
-        //         0: {cellWidth: 90},
-        //         1: {cellWidth: 30},
-        //         2: {cellWidth: 40},
-        //         3: {cellWidth: 40},
-        //         },
-        //     });
-
-        //     // Additional Details Section
-        //     const finalY = doc.lastAutoTable.finalY + 10;
-        //     doc.text(`Subtotal: ${invoiceData.currency} ${invoiceData.subtotal.toFixed(2)}`, 140, finalY);
-        //     doc.text(`Discount: ${invoiceData.currency} ${invoiceData.totalDiscount.toFixed(2)}`, 140, finalY + 6);
-        //     doc.text(`Tax: ${invoiceData.currency} ${invoiceData.totalTax.toFixed(2)}`, 140, finalY + 12);
-        //     doc.setFontSize(12);
-        //     doc.setFont("times", "bold");
-        //     doc.text(`Grand Total: ${invoiceData.currency} ${invoiceData.grandTotal.toFixed(2)}`, 140, finalY + 20);
-
-        //     // Save the PDF
-        //     doc.save('invoice.pdf');
-        // };
+        generatePDF(invoiceData);
     }
+
+
+    const generatePDF = (invoiceData) => {
+        const doc = new jsPDF();
+
+        const headersColor = 230;
+        const lineColor = 200;
+
+        doc.setFillColor(63, 81, 181);
+        doc.rect(0, 0, 210, 30, 'F');
+        doc.setFontSize(18);
+        doc.setTextColor(255, 255, 255);
+        doc.text('INVOICE', 105, 20, { align: "center" });
+
+        doc.setTextColor(0);
+
+        doc.setFontSize(11);
+        doc.text(`Date: ${new Date(invoiceData.currentDate).toLocaleDateString()}`, 20, 40);
+        doc.text(`Due Date: ${new Date(invoiceData.dueDate).toLocaleDateString()}`, 20, 46);
+        doc.text(`Invoice No.: ${invoiceData.invoiceNo}`, 20, 52);
+
+        doc.setFontSize(10);
+        doc.text('Bill To:', 20, 60);
+        doc.setFontSize(10);
+        doc.text(invoiceData.billTo.name, 20, 66);
+        doc.text(invoiceData.billTo.email, 20, 72);
+        doc.text(invoiceData.billTo.address, 20, 78);
+        doc.text('Bill From:', 110, 60);
+        doc.text(invoiceData.billFrom.name, 110, 66);
+        doc.text(invoiceData.billFrom.email, 110, 72);
+        doc.text(invoiceData.billFrom.address, 110, 78);
+        doc.setDrawColor(lineColor);
+        doc.line(20, 85, 190, 85);
+
+        autoTable(doc, {
+            startY: 90,
+            theme: 'grid',
+            head: [['Description', 'Quantity', 'Price', 'Total']],
+            body: invoiceData.items.map(item => [item.description, item.quantity, item.price.toFixed(2), (item.quantity * item.price).toFixed(2)]),
+            styles: {
+            fillColor: [255, 255, 255],
+            },
+            headStyles: {
+            fillColor: [headersColor],
+            },
+            columnStyles: {
+            0: {cellWidth: 90},
+            1: {cellWidth: 30},
+            2: {cellWidth: 40},
+            3: {cellWidth: 40},
+            },
+        });
+
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.text(`Subtotal: ${invoiceData.currency} ${invoiceData.subtotal.toFixed(2)}`, 140, finalY);
+        doc.text(`Discount: ${invoiceData.currency} ${invoiceData.totalDiscount.toFixed(2)}`, 140, finalY + 6);
+        doc.text(`Tax: ${invoiceData.currency} ${invoiceData.totalTax.toFixed(2)}`, 140, finalY + 12);
+        doc.setFontSize(12);
+        doc.setFont("times", "bold");
+        doc.text(`Grand Total: ${invoiceData.currency} ${invoiceData.grandTotal.toFixed(2)}`, 140, finalY + 20);
+
+        // Save the PDF
+        doc.save('invoice.pdf');
+    };
 
     return (
         <div className="form">
@@ -202,15 +189,15 @@ const Form = () => {
                         <div className='toFrom'>
                             <div className="billTo">
                                 <label>Bill To:</label>
-                                <input type="text" placeholder="Name" onChange={(e) => {handleChange("BillToPerson.name", e.target.value, invoiceData)}}/>
-                                <input type="text" placeholder="Email" onChange={(e) => {handleChange("BillToPerson.email", e.target.value, invoiceData)}}/>
-                                <input type="text" placeholder="Address" onChange={(e) => {handleChange("BillToPerson.address", e.target.value, invoiceData)}}/>
+                                <input type="text" placeholder="Name" onChange={(e) => {handleChange("billToPerson.name", e.target.value, invoiceData)}}/>
+                                <input type="text" placeholder="Email" onChange={(e) => {handleChange("billToPerson.email", e.target.value, invoiceData)}}/>
+                                <input type="text" placeholder="Address" onChange={(e) => {handleChange("billToPerson.address", e.target.value, invoiceData)}}/>
                             </div>
                             <div className="billFrom">
                                 <label>Bill From:</label>
-                                <input type="text" placeholder="Name" onChange={(e) => {handleChange("BillFromPerson.name", e.target.value, invoiceData)}}/>
-                                <input type="text" placeholder="Email" onChange={(e) => {handleChange("BillToPerson.email", e.target.value, invoiceData)}}/>
-                                <input type="text" placeholder="Address" onChange={(e) => {handleChange("BillToPerson.address", e.target.value, invoiceData)}}/>
+                                <input type="text" placeholder="Name" onChange={(e) => {handleChange("billFromPerson.name", e.target.value, invoiceData)}}/>
+                                <input type="text" placeholder="Email" onChange={(e) => {handleChange("billFromPerson.email", e.target.value, invoiceData)}}/>
+                                <input type="text" placeholder="Address" onChange={(e) => {handleChange("billFromPerson.address", e.target.value, invoiceData)}}/>
                             </div>
                         </div>
 
