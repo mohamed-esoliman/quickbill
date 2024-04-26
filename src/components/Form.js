@@ -8,7 +8,7 @@ const Form = () => {
 
 
     let defaultDueDate = new Date();
-    defaultDueDate.setDate(defaultDueDate.getMonth() + 1);
+    defaultDueDate.setMonth(defaultDueDate.getMonth() + 1);
     defaultDueDate = defaultDueDate.toLocaleDateString();
 
     const [invoiceData, setInvoiceData] = useState({
@@ -110,7 +110,7 @@ const Form = () => {
         const headersColor = 230;
         const lineColor = 200;
 
-        doc.setFillColor(63, 81, 181);
+        doc.setFillColor(220, 81, 181);
         doc.rect(0, 0, 210, 30, 'F');
         doc.setFontSize(18);
         doc.setTextColor(255, 255, 255);
@@ -121,18 +121,18 @@ const Form = () => {
         doc.setFontSize(11);
         doc.text(`Date: ${new Date(invoiceData.currentDate).toLocaleDateString()}`, 20, 40);
         doc.text(`Due Date: ${new Date(invoiceData.dueDate).toLocaleDateString()}`, 20, 46);
-        doc.text(`Invoice No.: ${invoiceData.invoiceNo}`, 20, 52);
+        doc.text(`Invoice No.: ${invoiceData.invoiceNumber}`, 20, 52);
 
         doc.setFontSize(10);
         doc.text('Bill To:', 20, 60);
         doc.setFontSize(10);
-        doc.text(invoiceData.billTo.name, 20, 66);
-        doc.text(invoiceData.billTo.email, 20, 72);
-        doc.text(invoiceData.billTo.address, 20, 78);
+        doc.text(invoiceData.billToPerson.name, 20, 66);
+        doc.text(invoiceData.billToPerson.email, 20, 72);
+        doc.text(invoiceData.billToPerson.address, 20, 78);
         doc.text('Bill From:', 110, 60);
-        doc.text(invoiceData.billFrom.name, 110, 66);
-        doc.text(invoiceData.billFrom.email, 110, 72);
-        doc.text(invoiceData.billFrom.address, 110, 78);
+        doc.text(invoiceData.billFromPerson.name, 110, 66);
+        doc.text(invoiceData.billFromPerson.email, 110, 72);
+        doc.text(invoiceData.billFromPerson.address, 110, 78);
         doc.setDrawColor(lineColor);
         doc.line(20, 85, 190, 85);
 
@@ -165,11 +165,14 @@ const Form = () => {
 
         // Save the PDF
         doc.save('invoice.pdf');
+        const iframe = `<iframe width='100%' height='100%' src=${doc.output('datauristring')}></iframe>`
+        const newTab = window.open();
+        newTab?.document.write(iframe);
     };
 
     return (
         <div className="form">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={(e) => {handleSubmit(e)}}>
                 <div className='formContent'>
                     <div className="left">
                         <div className="invoiceInfo">
