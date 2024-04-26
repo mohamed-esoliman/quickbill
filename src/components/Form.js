@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 
-
-const Form = () => {
-
+const Form = ({updatePdfUri}) => {
 
     let defaultDueDate = new Date();
     defaultDueDate.setMonth(defaultDueDate.getMonth() + 1);
@@ -36,6 +35,7 @@ const Form = () => {
             totalTax: 0,
             grandTotal: 0
         });
+
 
     const handleChange = (propPath, value, invoiceData) => {
         if (!propPath) return;
@@ -99,18 +99,13 @@ const Form = () => {
         invoiceData.totalTax = invoiceData.subtotal * (invoiceData.tax / 100);
         invoiceData.grandTotal = invoiceData.subtotal - invoiceData.totalDiscount + invoiceData.totalTax;
 
-
-        generatePDF(invoiceData);
+        generatePdf(invoiceData);
     }
 
-
-    const generatePDF = (invoiceData) => {
+    const generatePdf = (invoiceData) => {
         const doc = new jsPDF();
 
-        const headersColor = 230;
-        const lineColor = 200;
-
-        doc.setFillColor(220, 81, 181);
+        doc.setFillColor(0, 139, 139);
         doc.rect(0, 0, 210, 30, 'F');
         doc.setFontSize(18);
         doc.setTextColor(255, 255, 255);
@@ -119,13 +114,13 @@ const Form = () => {
         doc.setTextColor(0);
 
         doc.setFontSize(11);
-        doc.text(`Date: ${new Date(invoiceData.currentDate).toLocaleDateString()}`, 20, 40);
-        doc.text(`Due Date: ${new Date(invoiceData.dueDate).toLocaleDateString()}`, 20, 46);
-        doc.text(`Invoice No.: ${invoiceData.invoiceNumber}`, 20, 52);
+        doc.text(`Date: ${invoiceData.currentDate}`, 20, 40);
+        doc.text(`Due Date: ${invoiceData.DueDate}`, 20, 46);
+        doc.text(`Invoice Number.: ${invoiceData.invoiceNumber}`, 20, 52);
 
-        doc.setFontSize(10);
+        doc.setFontSize(12);
         doc.text('Bill To:', 20, 60);
-        doc.setFontSize(10);
+        doc.setFontSize(11);
         doc.text(invoiceData.billToPerson.name, 20, 66);
         doc.text(invoiceData.billToPerson.email, 20, 72);
         doc.text(invoiceData.billToPerson.address, 20, 78);
@@ -133,22 +128,23 @@ const Form = () => {
         doc.text(invoiceData.billFromPerson.name, 110, 66);
         doc.text(invoiceData.billFromPerson.email, 110, 72);
         doc.text(invoiceData.billFromPerson.address, 110, 78);
-        doc.setDrawColor(lineColor);
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
         doc.line(20, 85, 190, 85);
 
         autoTable(doc, {
             startY: 90,
             theme: 'grid',
-            head: [['Description', 'Quantity', 'Price', 'Total']],
-            body: invoiceData.items.map(item => [item.description, item.quantity, item.price.toFixed(2), (item.quantity * item.price).toFixed(2)]),
+            head: [['Item', 'Quantity', 'Price', 'Total']],
+            body: invoiceData.items.map(item => [item.description, item.quantity, item.price.toFixed(2), item.total.toFixed(2)]),
             styles: {
             fillColor: [255, 255, 255],
             },
             headStyles: {
-            fillColor: [headersColor],
+            fillColor: [83, 146, 230],
             },
             columnStyles: {
-            0: {cellWidth: 90},
+            0: {cellWidth: 60},
             1: {cellWidth: 30},
             2: {cellWidth: 40},
             3: {cellWidth: 40},
@@ -156,19 +152,16 @@ const Form = () => {
         });
 
         const finalY = doc.lastAutoTable.finalY + 10;
-        doc.text(`Subtotal: ${invoiceData.currency} ${invoiceData.subtotal.toFixed(2)}`, 140, finalY);
-        doc.text(`Discount: ${invoiceData.currency} ${invoiceData.totalDiscount.toFixed(2)}`, 140, finalY + 6);
-        doc.text(`Tax: ${invoiceData.currency} ${invoiceData.totalTax.toFixed(2)}`, 140, finalY + 12);
+        doc.text(`Subtotal: ${invoiceData.currency} ${invoiceData.subtotal.toFixed(2)}`, 120, finalY);
+        doc.text(`Total Discount (${invoiceData.discount}%): ${invoiceData.currency} ${invoiceData.totalDiscount.toFixed(2)}`, 120, finalY + 6);
+        doc.text(`Total Tax (${invoiceData.tax}%): ${invoiceData.currency} ${invoiceData.totalTax.toFixed(2)}`, 120, finalY + 12);
         doc.setFontSize(12);
-        doc.setFont("times", "bold");
-        doc.text(`Grand Total: ${invoiceData.currency} ${invoiceData.grandTotal.toFixed(2)}`, 140, finalY + 20);
-
-        // Save the PDF
+        doc.setFont("bold");  
+        doc.text(`Grand Total: ${invoiceData.currency} ${invoiceData.grandTotal.toFixed(2)}`, 120, finalY + 20);
+        
         doc.save('invoice.pdf');
-        const iframe = `<iframe width='100%' height='100%' src=${doc.output('datauristring')}></iframe>`
-        const newTab = window.open();
-        newTab?.document.write(iframe);
-    };
+        updatePdfUri(doc.output('datauristring'));
+    }
 
     return (
         <div className="form">
@@ -243,7 +236,9 @@ const Form = () => {
                                 <input type="number" onChange={(e) => {handleChange("tax", e.target.value, invoiceData)}}/>
                             </span>
                         </div>
-                        <button type="submit">Generate Invoice</button>
+                        <Link to="/pdfPreview">
+                            <button type="submit">Generate Invoice</button>
+                        </Link>
                     </div>
                 </div>
             </form>

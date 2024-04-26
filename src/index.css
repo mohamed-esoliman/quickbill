@@ -1,3 +1,4 @@
+/*
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
 
@@ -144,4 +145,127 @@ nav span {
   display: flex;
   flex-direction: row;
   margin: 1rem;
+}
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+/* Base Styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: #ecf0f1;
+  color: #333;
+}
+
+/* Navigation Bar */
+nav {
+  background-color: #34495e;
+  color: white;
+  padding: 0.8rem;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+/* Form Container */
+.form {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Grid layout for form */
+.formContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.left,
+.right {
+  padding: 20px;
+  background: #f8f8f8;
+  border-radius: 10px;
+}
+
+/* Styling for input and select fields */
+.input-group {
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.input-group input,
+.input-group select {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #bdc3c7;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+/* Button Styles */
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background-color: #3498db;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+/* Items Container */
+.items {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.itemInput {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.itemInput input[type="text"],
+.itemInput input[type="number"] {
+  flex: 1;
+  margin-right: 10px;
+  padding: 8px;
+}
+
+.itemInput button {
+  padding: 8px 16px;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 8px;
+}
+
+.itemInput button:hover {
+  background-color: #c0392b;
+}
+
+/* Responsive Design Adjustments */
+@media (max-width: 768px) {
+  .formContent {
+    grid-template-columns: 1fr;
+  }
+
+  .left,
+  .right {
+    padding: 10px;
+  }
 }
