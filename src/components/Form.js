@@ -236,9 +236,9 @@ const Form = ({updatePdfUri}) => {
                                 <input type="number" onChange={(e) => {handleChange("tax", e.target.value, invoiceData)}}/>
                             </span>
                         </div>
-                        <Link to="/pdfPreview">
+                        {/* <Link to="/pdfPreview"> */}
                             <button type="submit">Generate Invoice</button>
-                        </Link>
+                        {/* </Link> */}
                     </div>
                 </div>
             </form>

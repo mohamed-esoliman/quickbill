@@ -6,12 +6,16 @@ const PdfPreview = ({iframeSrc}) => {
     return (
         <div>
             <div className='pdfPreview'>
-                <iframe
-                    src={iframeSrc}
-                    style={{ width: '100%', height: '500px', border: 'none' }}
-                    title="PDF Preview"
-                    frameBorder="0"
-                ></iframe>
+                {iframeSrc ? (
+                    <iframe
+                        src={iframeSrc}
+                        style={{ width: '100%', height: '500px', border: 'none' }}
+                        title="PDF Preview"
+                        frameBorder="0"
+                    ></iframe>
+                ) : (
+                    <p> PDF LOADING </p>
+                )}
             </div>
             <div className='editButton'>
                 <Link to="/">
