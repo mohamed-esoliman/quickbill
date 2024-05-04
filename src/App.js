@@ -16,7 +16,8 @@ function App() {
       <div className="App">
       <NavBar />
       <Routes>
-        <Route exact path="/" element = {<Form updatePdfUri={updatePdfUri}/>} />
+        <Route exact path="/" element = {<Form updatePdfUri={updatePdfUri} needReset="false"/>} />
+        <Route exact path="/newInvoice" element = {<Form updatePdfUri={updatePdfUri} needReset="true"/>} />
         <Route exact path="/pdfPreview" element = {<PdfPreview iframeSrc = {pdfUri} />} />
       </Routes>
       </div>

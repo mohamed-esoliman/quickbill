@@ -1,8 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const PdfPreview = ({iframeSrc}) => {
     
+    const navigate = useNavigate();
+
     return (
         <div>
             <div className='pdfPreview'>
@@ -17,10 +19,9 @@ const PdfPreview = ({iframeSrc}) => {
                     <p> PDF LOADING </p>
                 )}
             </div>
-            <div className='editButton'>
-                <Link to="/">
-                    <button>Edit Invoice</button>
-                </Link>
+            <div className='buttons'>
+                <button onClick={() => {navigate("/", { reset:'true' })}}>Edit Invoice</button>
+                <button onClick={() => {navigate("/newInvoice", { reset:'false'})}}>New Receipt</button>
             </div>
         </div>
     );

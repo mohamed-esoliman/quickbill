@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect} from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 
-const Form = ({updatePdfUri}) => {
+const Form = ({updatePdfUri, needReset}) => {
+
+    const navigate = useNavigate();
 
     let defaultDueDate = new Date();
     defaultDueDate.setMonth(defaultDueDate.getMonth() + 1);
     defaultDueDate = defaultDueDate.toLocaleDateString();
 
-    const [invoiceData, setInvoiceData] = useState({
+    const emptyInvoice = {
             currentDate: new Date().toLocaleDateString(),
             dueDate: defaultDueDate,
-            invoiceNumber: '1',
+            invoiceNumber: '',
             billToPerson: {
                 name: "",
                 email: "",
@@ -34,8 +36,19 @@ const Form = ({updatePdfUri}) => {
             totalDiscount: 0,
             totalTax: 0,
             grandTotal: 0
-        });
+        }
 
+    const [invoiceData, setInvoiceData] = useState(emptyInvoice);
+
+    useEffect(
+        () => {
+            console.log(needReset);
+            if (needReset === 'true') {
+                console.log('resetting');
+                setInvoiceData(emptyInvoice);
+            }
+        }, [needReset]
+    )
 
     const handleChange = (propPath, value, invoiceData) => {
         if (!propPath) return;
@@ -88,7 +101,7 @@ const Form = ({updatePdfUri}) => {
     }
 
     const handleSubmit = (event) => {
-        event.preventDefault()
+        event.preventDefault();
 
         for (let i = 0; i < invoiceData.items.length; i++) {
             invoiceData.items[i].total = invoiceData.items[i].quantity * invoiceData.items[i].price;
@@ -99,10 +112,10 @@ const Form = ({updatePdfUri}) => {
         invoiceData.totalTax = invoiceData.subtotal * (invoiceData.tax / 100);
         invoiceData.grandTotal = invoiceData.subtotal - invoiceData.totalDiscount + invoiceData.totalTax;
 
-        generatePdf(invoiceData);
+        generatePdf(invoiceData, () => {navigate('/pdfPreview')});
     }
 
-    const generatePdf = (invoiceData) => {
+    const generatePdf = (invoiceData, navigation) => {
         const doc = new jsPDF();
 
         doc.setFillColor(0, 139, 139);
@@ -159,8 +172,12 @@ const Form = ({updatePdfUri}) => {
         doc.setFont("bold");  
         doc.text(`Grand Total: ${invoiceData.currency} ${invoiceData.grandTotal.toFixed(2)}`, 120, finalY + 20);
         
-        doc.save('invoice.pdf');
+        // doc.save('invoice.pdf');
         updatePdfUri(doc.output('datauristring'));
+
+        if (navigation) {
+            navigation();
+        }
     }
 
     return (
@@ -175,25 +192,25 @@ const Form = ({updatePdfUri}) => {
                             </span>
                             <span>
                                 <label>Due Date: </label>
-                                <input type="date" onChange={(e) => {handleChange("dueDate", e.target.value, invoiceData)}}/>
+                                <input type="date" value = {invoiceData.dueDate} onChange={(e) => {handleChange("dueDate", e.target.value, invoiceData)}}/>
                             </span>
                             <span>
                                 <label>Invoice Number: </label>
-                                <input type="number" onChange={(e) => {handleChange("invoiceNumber", e.target.value, invoiceData)}}/>
+                                <input type="number" value = {invoiceData.invoiceNumber} onChange={(e) => {handleChange("invoiceNumber", e.target.value, invoiceData)}}/>
                             </span>
                         </div>
                         <div className='toFrom'>
                             <div className="billTo">
                                 <label>Bill To:</label>
-                                <input type="text" placeholder="Name" onChange={(e) => {handleChange("billToPerson.name", e.target.value, invoiceData)}}/>
-                                <input type="text" placeholder="Email" onChange={(e) => {handleChange("billToPerson.email", e.target.value, invoiceData)}}/>
-                                <input type="text" placeholder="Address" onChange={(e) => {handleChange("billToPerson.address", e.target.value, invoiceData)}}/>
+                                <input type="text" value = {invoiceData.billToPerson.name} onChange={(e) => {handleChange("billToPerson.name", e.target.value, invoiceData)}}/>
+                                <input type="text" value = {invoiceData.billToPerson.email} onChange={(e) => {handleChange("billToPerson.email", e.target.value, invoiceData)}}/>
+                                <input type="text" value = {invoiceData.billToPerson.address} onChange={(e) => {handleChange("billToPerson.address", e.target.value, invoiceData)}}/>
                             </div>
                             <div className="billFrom">
                                 <label>Bill From:</label>
-                                <input type="text" placeholder="Name" onChange={(e) => {handleChange("billFromPerson.name", e.target.value, invoiceData)}}/>
-                                <input type="text" placeholder="Email" onChange={(e) => {handleChange("billFromPerson.email", e.target.value, invoiceData)}}/>
-                                <input type="text" placeholder="Address" onChange={(e) => {handleChange("billFromPerson.address", e.target.value, invoiceData)}}/>
+                                <input type="text" value = {invoiceData.billFromPerson.name} onChange={(e) => {handleChange("billFromPerson.name", e.target.value, invoiceData)}}/>
+                                <input type="text" value = {invoiceData.billFromPerson.email} onChange={(e) => {handleChange("billFromPerson.email", e.target.value, invoiceData)}}/>
+                                <input type="text" value = {invoiceData.billFromPerson.address} onChange={(e) => {handleChange("billFromPerson.address", e.target.value, invoiceData)}}/>
                             </div>
                         </div>
 
@@ -206,11 +223,11 @@ const Form = ({updatePdfUri}) => {
                             </span>
                             {invoiceData.items.map((item) => (
                                 <div key={item.id} className="itemInput">
-                                    <input type="text" placeholder="Item Description" onChange={(e) => handleDescriptionChange(item.id, e.target.value)}/>
-                                    <input type="number" placeholder="Quantity" onChange={(e) => handleQuantityChange(item.id, e.target.value)}/>
-                                    <input type="number" placeholder="Price" onChange={(e) => handlePriceChange(item.id, e.target.value)}/>
+                                    <input type="text" value = {item.description} onChange={(e) => handleDescriptionChange(item.id, e.target.value)}/>
+                                    <input type="number" value = {item.quantity} onChange={(e) => handleQuantityChange(item.id, e.target.value)}/>
+                                    <input type="number" value = {item.price} onChange={(e) => handlePriceChange(item.id, e.target.value)}/>
                                     <label>{item.quantity * item.price}</label>
-                                    <button onClick={() => handleRemoveItem(item.id)}>Remove</button>
+                                    {invoiceData.items.length>1 ? <button onClick={() => handleRemoveItem(item.id)}>Remove</button>: null}
                                 </div>
                             ))}
                             <button onClick={handleAddItem}>Add Item</button>
@@ -221,24 +238,26 @@ const Form = ({updatePdfUri}) => {
                         <div className='financialInfo'>
                             <span>
                                 <label>Currency</label>
-                                <select onChange={(e) => {handleChange("currency", e.target.value, invoiceData)}}>
-                                    <option>USD</option>
-                                    <option>EUR</option>
-                                    <option>GBP</option>
+                                <select value = {invoiceData.currency} onChange={(e) => {handleChange("currency", e.target.value, invoiceData)}}>
+                                    <option>$</option>
+                                    <option>€</option>
+                                    <option>£</option>
+                                    <option>₹</option>
+                                    <option>¥</option>
+                                    <option>₽</option>
+                                    <option>₿</option>
                                 </select>
                             </span>
                             <span>
                                 <label>Discount (%)</label>
-                                <input type="number" onChange={(e) => {handleChange("discount", e.target.value, invoiceData)}}/>
+                                <input type="number" value = {invoiceData.discount} onChange={(e) => {handleChange("discount", e.target.value, invoiceData)}}/>
                             </span>
                             <span>
                                 <label>Tax (%)</label>
-                                <input type="number" onChange={(e) => {handleChange("tax", e.target.value, invoiceData)}}/>
+                                <input type="number" value = {invoiceData.tax} onChange={(e) => {handleChange("tax", e.target.value, invoiceData)}}/>
                             </span>
                         </div>
-                        {/* <Link to="/pdfPreview"> */}
-                            <button type="submit">Generate Invoice</button>
-                        {/* </Link> */}
+                        <button type="submit">Generate Invoice</button>
                     </div>
                 </div>
             </form>
