@@ -219,7 +219,7 @@ const Form = ({updatePdfUri, needReset}) => {
                                 <label>Item</label>
                                 <label>Quantity</label>
                                 <label>Price</label>
-                                <label>Total</label>
+                                <label className='total'>Total</label>
                             </span>
                             {invoiceData.items.map((item) => (
                                 <div key={item.id} className="itemInput">
